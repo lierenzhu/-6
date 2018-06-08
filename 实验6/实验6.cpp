@@ -329,7 +329,6 @@ void zhuijia()
 		{
 			words[i] = '\0';
 			T = createBst(T, words, 1);
-			//printf("%s ", words);
 			i = 0;
 		}
 		c = fgetc(fpRead);
@@ -348,7 +347,7 @@ void main()
 	readResult();
 	while (1)
 	{
-		printf("请输入操作：\n1.读取数据\n2.输出前十个出现次数最多的单词\n3.查找特定单词\n4.追加输入\n");
+		printf("请输入操作：\n1.读取数据\n2.输出前十个出现次数最多的单词\n3.查找特定单词\n4.追加输入\n0.退出\n");
 		scanf("%d", &choose);
 		system("cls");
 		switch (choose)
@@ -378,6 +377,9 @@ void main()
 		case 4: {
 			zhuijia();
 			break;
+		}
+		case 0: {
+			exit(0);
 		}
 		}
 	}
