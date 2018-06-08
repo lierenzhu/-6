@@ -4,6 +4,11 @@
 #include<ctype.h>
 #define WORDS 20
 
+struct sort
+{
+	char  data[WORDS];
+	int time;
+};
 /**********************二叉树节点***********************/
 typedef struct Bsnode
 {
@@ -105,6 +110,7 @@ int isEnd(char x[], char y)
 
 /**********************二叉树操作函数**********************/
 int m;
+sort *readed, *sorted;
 BSP createBst(BSP T,char words[WORDS],int time)
 {
 	BSP p, q;
@@ -165,12 +171,18 @@ BSP createBst(BSP T,char words[WORDS],int time)
 	return(T);
 }
 
+int cmp1(const void *a, const void *b);
+
 void inOrderLDR(BSP T)
 {
 	int i = 0;
+	int j = 0;
 	BSP p = T;
 	slink S = NULL;
 	Push(&S, T);
+	readed = (sort*)malloc(sizeof(sort)*m);
+	FILE *fpWrite;
+	fpWrite = fopen("result.txt", "w");
 	while (!Emptystack(S))
 	{
 		while ((p = Getstop(S)) && p)
@@ -184,11 +196,21 @@ void inOrderLDR(BSP T)
 				printf("%c", p->data[i]);
 				i++;
 			}
+			strcpy(readed[j].data, p->data);
+			readed[j].time = p->time;
+			j++;
 			printf(" ");
 			i = 0;
 			Push(&S, p->Rchild);
 		}
 	}
+	qsort(readed, m, sizeof(sort), cmp1);
+	fprintf(fpWrite,"共有%d个单词\n",m);
+	for (int k = 0; k < m; k++)
+	{
+		fprintf(fpWrite, "%s : %d\n", readed[k].data, readed[k].time);
+	}
+	fclose(fpWrite);
 	printf("\n文件读取完毕……\n");
 	printf("按回车键继续……\n");
 	getchar();
@@ -231,10 +253,133 @@ BSP readFromFile()
 
 }
 
+int cmp1 (const void *a, const void *b)
+{
+	return -((*(sort *)a).time - (*(sort *)b).time);
+}
+
+
+int chazhao(char a[WORDS])
+{
+	int i = 0;
+	for (i = 0; i < m; i++)
+	{
+		if (strcmp(readed[i].data, a) == 0)
+		{
+			return(i);
+		}
+	}
+	return(-1);
+}
+
+void find()
+{
+	int i;
+	printf("请输入要查询的单词：");
+	char a[WORDS];
+	scanf("%s", &a);
+	i = chazhao(a);
+	if (i != -1)
+		printf("%s出现过%d次\n", a, readed[i].time);
+	else
+		printf("%s在文中没出现过\n", a);
+	printf("按回车继续");
+	getchar();
+	getchar();
+	system("cls");
+}
+
+void readResult()
+{
+	FILE *fpReadResult = fopen("result.txt", "r");
+	fscanf(fpReadResult, "共有%d个单词", &m);
+	free(readed);
+	readed = (sort*)malloc(sizeof(sort)*m);
+	for (int i = 0; i < m; i++)
+	{
+		fscanf(fpReadResult, "%s : %d", &readed[i].data, &readed[i].time);
+	}
+}
+
+void zhuijia()
+{
+	char c, file[100], words[WORDS];
+	int i = 0, j = 0, k;
+	FILE *fpRead;
+	printf("请输入需要追加的文件（确保文件在根目录下）：");
+	scanf("%s", &file);
+	fpRead = fopen(file, "r");
+	c = fgetc(fpRead);
+	BSP T;
+	T = NULL;
+	int n = m;
+	for (k = 0; k < n; k++)
+	{
+		T = createBst(T, readed[k].data, readed[k].time);
+	}
+	m = n;
+	while (c != -1)
+	{
+		if ((c >= 'a'&&c <= 'z') || (c >= 'A'&&c <= 'Z') || (c >= '0'&&c <= '9') || c == '_')
+		{
+			words[i] = c;
+			i++;
+		}
+		else if (i != 0)
+		{
+			words[i] = '\0';
+			T = createBst(T, words, 1);
+			//printf("%s ", words);
+			i = 0;
+		}
+		c = fgetc(fpRead);
+	}
+	inOrderLDR(T);
+	free(readed);
+	readResult();
+	fclose(fpRead);
+}
+
 void main()
 {
 	BSP T;
-	T = readFromFile();
-	inOrderLDR(T);
-	system("pause");
+	int i = 0;
+	int choose;
+	readResult();
+	while (1)
+	{
+		printf("请输入操作：\n1.读取数据\n2.输出前十个出现次数最多的单词\n3.查找特定单词\n4.追加输入\n");
+		scanf("%d", &choose);
+		system("cls");
+		switch (choose)
+		{
+		case 1: {
+			free(readed);
+			T = readFromFile();
+			inOrderLDR(T);
+			break;
+		}
+		case 2: {
+			readResult();
+			for (i = 0; i < 10; i++)
+			{
+				printf("%s:%d\n", readed[i].data, readed[i].time);
+			}
+			printf("按回车键继续……\n");
+			getchar();
+			getchar();
+			system("cls");
+			break;
+		}
+		case 3: {
+			find();
+			break;
+		}
+		case 4: {
+			zhuijia();
+			break;
+		}
+		}
+	}
+	
 }
